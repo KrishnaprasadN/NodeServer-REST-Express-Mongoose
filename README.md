@@ -1,4 +1,4 @@
-# NodeServer-Mongoose
+# NodeServer-REST-Express-Mongoose
 Node Js REST API Server based on Express, Mongoose for MongoDB, Mongoose Currency. This is a skeleton app for NodeJS REST server.
 
 This app can be used as a reference for creating Nodejs REST api server using Express.
