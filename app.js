@@ -12,6 +12,9 @@ const mongoose = require('mongoose')
 require('mongoose-currency').loadType(mongoose)
 const Currency = mongoose.Types.Currency
 
+var passport = require('passport');
+var authenticate = require('./authenticate');
+
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/usersRouter');
 var dishRouter = require("./routes/dishRouter")
@@ -44,27 +47,23 @@ app.use(session({
   store: new FileStore()
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // authorization function which checks for user name and password in the
 // header as a basic authentication method
 function auth(req, res, next) {
-  console.log(req.session);
+  console.log(req.user);
 
-  if (!req.session.user) {
+  if (!req.user) {
     var err = new Error('You are not authenticated!');
     err.status = 403;
-    return next(err);
+    next(err);
   } else {
-    if (req.session.user === 'authenticated') {
-      next();
-    }
-    else {
-      var err = new Error('You are not authenticated!');
-      err.status = 403;
-      return next(err);
-    }
+    next();
   }
 }
 
