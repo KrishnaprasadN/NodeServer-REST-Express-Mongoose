@@ -14,6 +14,7 @@ const Currency = mongoose.Types.Currency
 
 var passport = require('passport');
 var authenticate = require('./authenticate');
+var config = require('./config');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/usersRouter');
@@ -21,7 +22,7 @@ var dishRouter = require("./routes/dishRouter")
 var promoRouter = require("./routes/promoRouter")
 var leaderRouter = require("./routes/leadersRouter")
 
-const url = 'mongodb://localhost:27017/conFusion'
+const url = config.mongoUrl;
 const connect = mongoose.connect(url)
 connect.then((db) => {
   console.log('*** Connected to DB')
@@ -47,28 +48,12 @@ app.use(session({
   store: new FileStore()
 }));
 
+// set passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-
-// authorization function which checks for user name and password in the
-// header as a basic authentication method
-function auth(req, res, next) {
-  console.log(req.user);
-
-  if (!req.user) {
-    var err = new Error('You are not authenticated!');
-    err.status = 403;
-    next(err);
-  } else {
-    next();
-  }
-}
-
-app.use(auth)
-
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/dishes', dishRouter);

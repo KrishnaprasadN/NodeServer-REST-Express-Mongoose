@@ -7,6 +7,7 @@ var User = require('../models/user');
 router.use(bodyParser.json());
 
 var passport = require('passport');
+var authenticate = require('../authenticate');
 
 /* GET users listing. */
 router.get('/', function (req, res, next) {
@@ -33,9 +34,14 @@ router.post('/signup', (req, res, next) => {
 
 // login route
 router.post('/login', passport.authenticate('local'), (req, res) => {
+  // create a json web token and send it back in the response
+  // this token in created using user id as payload. 
+  // In general we can use any unique user information for user verification
+  var token = authenticate.getToken({_id: req.user._id, name: req.user.username});
+
   res.statusCode = 200;
   res.setHeader('Content-Type', 'application/json');
-  res.json({ success: true, status: 'You are successfully logged in!' });
+  res.json({success: true, token: token, status: 'You are successfully logged in!'});
 });
 
 router.get('/logout', (req, res) => {
