@@ -53,6 +53,7 @@ exports.verifyUser = function (req, res, next) {
                 return next(err);
             } else {
                 req.decoded = decoded;
+                req.user.admin = true;
                 next();
             }
         });
@@ -65,6 +66,7 @@ exports.verifyUser = function (req, res, next) {
 
 // checks if the user is admin or not
 exports.verifyAdmin = function (req, res, next) {
+    console.log(req.user)
     if (req.user.admin) {
         next();
     } else {
