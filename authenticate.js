@@ -1,6 +1,8 @@
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var FacebookTokenStrategy = require('passport-facebook-token');
 var User = require('./models/user');
+
 
 var JwtStrategy = require('passport-jwt').Strategy;
 var ExtractJwt = require('passport-jwt').ExtractJwt;
@@ -43,7 +45,7 @@ exports.jwtPassport = passport.use(new JwtStrategy(opts,
 
 // gets the token from request and verifies to check if its valid
 // if valid, then user is authenticated else error is sent back to client
-exports.verifyUser = function (req, res, next) {
+/*exports.verifyUser = function (req, res, next) {
     var token = req.body.token || req.query.token || req.headers['x-access-token'];
     if (token) {
         jwt.verify(token, config.secretKey, function (err, decoded) {
@@ -62,7 +64,9 @@ exports.verifyUser = function (req, res, next) {
         err.status = 403;
         return next(err);
     }
-};
+};*/
+
+exports.verifyUser = passport.authenticate('jwt', { session: false });
 
 // checks if the user is admin or not
 exports.verifyAdmin = function (req, res, next) {
@@ -75,3 +79,30 @@ exports.verifyAdmin = function (req, res, next) {
         return next(err);
     }
 }
+
+exports.facebookPassport = passport.use(new FacebookTokenStrategy({
+    clientID: config.facebook.clientId,
+    clientSecret: config.facebook.clientSecret
+}, (accessToken, refreshToken, profile, done) => {
+    User.findOne({ facebookId: profile.id }, (err, user) => {
+        if (err) {
+            return done(err, false);
+        }
+        if (!err && user !== null) {
+            return done(null, user);
+        }
+        else {
+            user = new User({ username: profile.displayName });
+            user.facebookId = profile.id;
+            user.firstname = profile.name.givenName;
+            user.lastname = profile.name.familyName;
+            user.save((err, user) => {
+                if (err)
+                    return done(err, false);
+                else
+                    return done(null, user);
+            })
+        }
+    });
+}
+));
